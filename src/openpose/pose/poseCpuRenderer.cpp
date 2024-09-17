@@ -1,23 +1,30 @@
-#include <openpose/pose/renderPose.hpp>
 #include <openpose/pose/poseCpuRenderer.hpp>
+#include <openpose/pose/renderPose.hpp>
+#include <openpose/utilities/keypoint.hpp>
 
 namespace op
 {
     PoseCpuRenderer::PoseCpuRenderer(const PoseModel poseModel, const float renderThreshold,
                                      const bool blendOriginalFrame, const float alphaKeypoint,
-                                     const float alphaHeatMap) :
-        Renderer{renderThreshold, alphaKeypoint, alphaHeatMap, blendOriginalFrame},
+                                     const float alphaHeatMap, const unsigned int elementToRender) :
+        Renderer{renderThreshold, alphaKeypoint, alphaHeatMap, blendOriginalFrame, elementToRender,
+                 getNumberElementsToRender(poseModel)}, // mNumberElementsToRender
         PoseRenderer{poseModel}
+    {
+    }
+
+    PoseCpuRenderer::~PoseCpuRenderer()
     {
     }
 
     std::pair<int, std::string> PoseCpuRenderer::renderPose(Array<float>& outputData,
                                                             const Array<float>& poseKeypoints,
+                                                            const float scaleInputToOutput,
                                                             const float scaleNetToOutput)
     {
         try
         {
-            // Security checks
+            // Sanity check
             if (outputData.empty())
                 error("Empty Array<float> outputData.", __LINE__, __FUNCTION__, __FILE__);
             // CPU rendering
@@ -25,7 +32,14 @@ namespace op
             std::string elementRenderedName;
             // Draw poseKeypoints
             if (elementRendered == 0)
-                renderPoseKeypointsCpu(outputData, poseKeypoints, mPoseModel, mRenderThreshold, mBlendOriginalFrame);
+            {
+                // Rescale keypoints to output size
+                auto poseKeypointsRescaled = poseKeypoints.clone();
+                scaleKeypoints(poseKeypointsRescaled, scaleInputToOutput);
+                // Render keypoints
+                renderPoseKeypointsCpu(outputData, poseKeypointsRescaled, mPoseModel, mRenderThreshold,
+                                       mBlendOriginalFrame);
+            }
             // Draw heat maps / PAFs
             else
             {

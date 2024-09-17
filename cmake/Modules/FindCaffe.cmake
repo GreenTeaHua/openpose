@@ -1,23 +1,27 @@
-# Copied from 
+# Copied from
 # https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/cnn_3dobj/FindCaffe.cmake
 
 unset(Caffe_FOUND)
 unset(Caffe_INCLUDE_DIRS)
 unset(Caffe_LIBS)
 
-find_path(Caffe_INCLUDE_DIRS NAMES 
-    caffe/caffe.hpp 
-    caffe/common.hpp 
-    caffe/net.hpp 
-    caffe/proto/caffe.pb.h 
+find_path(Caffe_INCLUDE_DIRS NAMES
+    caffe/caffe.hpp
+    caffe/common.hpp
+    caffe/net.hpp
+    caffe/proto/caffe.pb.h
     caffe/util/io.hpp
     HINTS
-    /usr/local/include)
+    ${CMAKE_BINARY_DIR}/caffe/include
+    NO_DEFAULT_PATH)
+    
 
 find_library(Caffe_LIBS NAMES caffe
     HINTS
-    /usr/local/lib)
+    ${CMAKE_BINARY_DIR}/caffe/lib
+    ${CMAKE_BINARY_DIR}/caffe/lib/x86_64-linux-gnu
+    NO_DEFAULT_PATH)
 
-if(CAFFE_LIBS AND Caffe_INCLUDE_DIRS)
+if (Caffe_LIBS AND Caffe_INCLUDE_DIRS)
   set(Caffe_FOUND 1)
-endif(CAFFE_LIBS AND Caffe_INCLUDE_DIRS)
+endif (Caffe_LIBS AND Caffe_INCLUDE_DIRS)

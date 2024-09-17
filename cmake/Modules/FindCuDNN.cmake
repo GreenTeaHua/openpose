@@ -7,14 +7,18 @@ find_path(CUDNN_INCLUDE cudnn.h
 
 get_filename_component(__libpath_hist ${CUDA_CUDART_LIBRARY} PATH)
 find_library(CUDNN_LIBRARY NAMES ${CUDNN_LIB_NAME}
-    PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDNN_INCLUDE} ${__libpath_hist} ${__libpath_hist}/../lib 
+    PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDNN_INCLUDE} ${__libpath_hist} ${__libpath_hist}/../lib
     DOC "Path to cuDNN library.")
 
 if(CUDNN_INCLUDE AND CUDNN_LIBRARY)
     set(HAVE_CUDNN  TRUE)
     set(CUDNN_FOUND TRUE)
 
-    file(READ ${CUDNN_INCLUDE}/cudnn.h CUDNN_VERSION_FILE_CONTENTS)
+    if(EXISTS "${CUDNN_INCLUDE}/cudnn_version.h")
+        file(READ ${CUDNN_INCLUDE}/cudnn_version.h CUDNN_VERSION_FILE_CONTENTS)
+    else()
+        file(READ ${CUDNN_INCLUDE}/cudnn.h CUDNN_VERSION_FILE_CONTENTS)
+    endif()
 
     # cuDNN v3 and beyond
     string(REGEX MATCH "define CUDNN_MAJOR * +([0-9]+)"
@@ -30,9 +34,9 @@ if(CUDNN_INCLUDE AND CUDNN_LIBRARY)
     string(REGEX REPLACE "define CUDNN_PATCHLEVEL * +([0-9]+)" "\\1"
            CUDNN_VERSION_PATCH "${CUDNN_VERSION_PATCH}")
 
-    if(NOT CUDNN_VERSION_MAJOR)
+    if (NOT CUDNN_VERSION_MAJOR)
       set(CUDNN_VERSION "???")
-    else()
+    else ()
       set(CUDNN_VERSION "${CUDNN_VERSION_MAJOR}.${CUDNN_VERSION_MINOR}.${CUDNN_VERSION_PATCH}")
     endif()
 
